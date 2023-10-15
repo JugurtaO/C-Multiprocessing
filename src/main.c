@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 
         if (pipe(t[i]) != 0) // création du pipe
         {
-            perror("IemePipe:");
+            perror("IèmePipe:");
             exit(1);
         }
     }
@@ -86,7 +86,6 @@ int main(int argc, char **argv)
                             exit(0);
 
                         case 1: //  store
-
                             read(t[N - 1][0], &key, sizeof(int));
 
                             // lecture de la taille de valeur
@@ -113,7 +112,7 @@ int main(int argc, char **argv)
                             close(t[N - 1][0]);
 
                             // close(t[i][1]);
-
+                            lenValeur = 0;
                             break;
 
                         case 2: // lookup
@@ -149,32 +148,16 @@ int main(int argc, char **argv)
                                 write(t[i][1], &key, sizeof(int));
                             }
 
+                            close(t[N - 1][0]);
+                            
+                            lenValeur = 0;
                             break;
                         case 3: // display
 
                             // code de display
 
                             break;
-                        // case '4':
-                        //     printf("I got order 4\n");
 
-                        //     write(t[i][1], &buf, strlen(buf) * sizeof(char));
-                        //     read(t[N - 1][0], &buf, strlen(buf) * sizeof(char));
-                        //     int u = atoi(buf);
-                        //     printf("I got value %d\n", u);
-                        //     u++;
-                        //     sprintf(buf, "%d", u);
-                        //     write(t[i][1], &buf, strlen(buf) * sizeof(char));
-                        //     read(t[N - 1][0], &buf, strlen(buf) * sizeof(char));
-                        //     if (buf[0] == '4')
-                        //     {
-                        //         printf("order 4 made a turn\n");
-                        //     }
-                        //     close(t[i][1]);
-                        //     close(t[N - 1][0]);
-                        //     close(1);           // close sotie standard
-                        //     close(pipeCtrl[1]); // close write pipe cntrl
-                        //     exit(0);
                         default:
                         }
                     }
@@ -203,7 +186,6 @@ int main(int argc, char **argv)
                             exit(0);
 
                         case 1: // store
-
                             // lecture de la clé key
                             read(t[i - 1][0], &key, sizeof(int));
 
@@ -228,6 +210,7 @@ int main(int argc, char **argv)
                                 write(t[i][1], valeur, lenValeur * sizeof(char));
                             }
 
+                            lenValeur = 0;
                             break;
                         case 2: // lookup
 
@@ -237,10 +220,18 @@ int main(int argc, char **argv)
                             // si la clé key est gérée par le noeud i alors on lance la recherche
                             if (isKeyManagedByNode(i, N, key))
                             {
-                                strcpy(valeur, lookup(listes[i], key));
-                                if (valeur != NULL) // une valeur a été retrouvée
+
+                                char *bb = lookup(listes[i], key);
+                                if (bb == NULL)
+                                    lenValeur = 0;
+                                else
                                 {
+                                    strcpy(valeur, bb);
+                                    printf(">>>>>>>>>>>>>>>>>>%s\n",valeur);
                                     lenValeur = strlen(valeur);
+                                }
+                                if (lenValeur != 0) // une valeur a été retrouvée
+                                {
 
                                     // envoi de la longeur de la valeur trouvée
                                     write(pipeCtrl[1], &lenValeur, sizeof(int));
@@ -262,27 +253,13 @@ int main(int argc, char **argv)
                                 write(t[i][1], &key, sizeof(int));
                             }
 
+                            lenValeur = 0;
                             break;
                         case 3: // display
 
                             // code de display
 
                             break;
-                            // case '4':
-                            // printf("I got order 4\n");
-                            // write(t[i][1], &buf, strlen(buf) * sizeof(char));
-                            // read(t[i - 1][0], &buf, strlen(buf) * sizeof(char));
-                            // int u = atoi(buf);
-                            // printf("I got value %d\n", u);
-                            // u++;
-                            // sprintf(buf, "%d", u);
-                            // write(t[i][1], &buf, strlen(buf) * sizeof(char));
-
-                            // close(t[i][1]);
-                            // close(t[i - 1][0]);
-                            // close(1);
-                            // close(pipeCtrl[1]);
-                            // exit(0);
 
                         default:
                         }
@@ -308,17 +285,6 @@ int main(int argc, char **argv)
     {
         close(t[k][0]);
     }
-
-    // CODE POUR TESTER LA CIRCULATION D'UN ENTIER DANS L'ANNEAU: POUR ESSAYER À NOUVEAU CE BOUT DE CODE ----> COMMENTER LE CODE CI DESSOUS APRÈS CE CODE
-    //  char k[100];
-    //  scanf("%s", k);
-    //  strcpy(buf, k);
-    //  write(t[N - 1][1], &buf, strlen(buf) * sizeof(char));
-    //  strcpy(buf, "0");
-    //  write(t[N - 1][1], &buf, strlen(buf) * sizeof(char));
-    //  while (wait(NULL))
-    //  {
-    //  };
 
     // ### PROGRAMME D'INTÉRACTION AVEC L'UTILISATEUR ###
     int commande;
@@ -364,7 +330,7 @@ int main(int argc, char **argv)
             continuer = false;
             break;
         case 1: // STORE
-
+            
             // Récupération de la clé de la valeur
             printf("Saisir la clé :");
             scanf("%d", &key);
@@ -396,6 +362,7 @@ int main(int argc, char **argv)
             break;
 
         case 2: // LOOKUP
+            
             // Récupération de la clé de la valeur
             printf("Saisir la clé à rechercher:");
             scanf("%d", &key);
@@ -415,16 +382,21 @@ int main(int argc, char **argv)
 
             // attendre la réponse du noeud effectif puis afficher le résultat ########
             sleep(2);
+
             // lecture de la longueur de la valeur recherchée
             read(pipeCtrl[0], &lenValeur, sizeof(int));
+
             if (lenValeur != 0)
             {
-                read(pipeCtrl[0],valeur,lenValeur*sizeof(char));
+                read(pipeCtrl[0], valeur, lenValeur * sizeof(char));
                 printf("Valeur trouvée : %s\n", valeur);
-            }else{
-                printf("Aucune valeur n'a été trouvée ! \n");
-
             }
+            else
+            {
+                printf("Aucune valeur n'a été trouvée ! \n");
+            }
+
+            lenValeur=0;
 
             break;
         case 3: // DUMP
