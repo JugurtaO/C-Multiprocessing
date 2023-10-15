@@ -357,7 +357,7 @@ int main(int argc, char **argv)
             }
 
             // attendre la mort de tous les processus fils
-            while (wait(NULL) > 0)
+            while (wait(NULL) != -1)
             {
                 printf("mort\n");
             };
@@ -413,7 +413,18 @@ int main(int argc, char **argv)
             // envoie de la clé
             write(t[N - 1][1], &key, sizeof(int));
 
-            // attendre la réponse du noeud effectif puis afficher le résultat########
+            // attendre la réponse du noeud effectif puis afficher le résultat ########
+            sleep(2);
+            // lecture de la longueur de la valeur recherchée
+            read(pipeCtrl[0], &lenValeur, sizeof(int));
+            if (lenValeur != 0)
+            {
+                read(pipeCtrl[0],valeur,lenValeur*sizeof(char));
+                printf("Valeur trouvée : %s\n", valeur);
+            }else{
+                printf("Aucune valeur n'a été trouvée ! \n");
+
+            }
 
             break;
         case 3: // DUMP
