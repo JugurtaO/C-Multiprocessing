@@ -118,7 +118,36 @@ int main(int argc, char **argv)
 
                         case 2: // lookup
 
-                            // code de lookup
+                            // lecture de la clé key
+                            read(t[N - 1][0], &key, sizeof(int));
+
+                            // si la clé key est gérée par le noeud i alors on lance la recherche
+                            if (isKeyManagedByNode(i, N, key))
+                            {
+                                strcpy(valeur, lookup(listes[i], key));
+                                if (valeur != NULL) // une valeur a été retrouvée
+                                {
+                                    lenValeur = strlen(valeur);
+
+                                    // envoi de la longeur de la valeur trouvée
+                                    write(pipeCtrl[1], &lenValeur, sizeof(int));
+                                    // envoi de la valeur trouvée
+                                    write(pipeCtrl[1], valeur, lenValeur * sizeof(char));
+                                }
+                                else // aucune  valeur n'a été trouvée
+                                {
+                                    // envoi de 0 comme référence à NULL
+                                    int zero = 0;
+                                    write(pipeCtrl[1], &zero, sizeof(int));
+                                }
+                            }
+                            else // sinon on la propage dans l'anneau
+                            {
+
+                                // envoie de la commande et de la clé au processus suivant
+                                write(t[i][1], &commande, sizeof(int));
+                                write(t[i][1], &key, sizeof(int));
+                            }
 
                             break;
                         case 3: // display
@@ -175,6 +204,7 @@ int main(int argc, char **argv)
 
                         case 1: // store
 
+                            // lecture de la clé key
                             read(t[i - 1][0], &key, sizeof(int));
 
                             // lecture de la taille de valeur
@@ -189,7 +219,7 @@ int main(int argc, char **argv)
                                 // si la clé key n'exite pas on la suavegarde ,sinon on fait rien
                                 if (!isKeyExists(listes[i], key))
                                     store(&listes[i], key, valeur);
-                                                        }
+                            }
                             else
                             { // sinon on la propage dans l'anneau en passant au noeud suivant
                                 write(t[i][1], &commande, sizeof(int));
@@ -201,7 +231,36 @@ int main(int argc, char **argv)
                             break;
                         case 2: // lookup
 
-                            // code de lookup
+                            // lecture de la clé key
+                            read(t[i - 1][0], &key, sizeof(int));
+
+                            // si la clé key est gérée par le noeud i alors on lance la recherche
+                            if (isKeyManagedByNode(i, N, key))
+                            {
+                                strcpy(valeur, lookup(listes[i], key));
+                                if (valeur != NULL) // une valeur a été retrouvée
+                                {
+                                    lenValeur = strlen(valeur);
+
+                                    // envoi de la longeur de la valeur trouvée
+                                    write(pipeCtrl[1], &lenValeur, sizeof(int));
+                                    // envoi de la valeur trouvée
+                                    write(pipeCtrl[1], valeur, lenValeur * sizeof(char));
+                                }
+                                else // aucune  valeur n'a été trouvée
+                                {
+                                    // envoi de 0 comme référence à NULL
+                                    int zero = 0;
+                                    write(pipeCtrl[1], &zero, sizeof(int));
+                                }
+                            }
+                            else // sinon on la propage dans l'anneau
+                            {
+
+                                // envoie de la commande et de la clé au processus suivant
+                                write(t[i][1], &commande, sizeof(int));
+                                write(t[i][1], &key, sizeof(int));
+                            }
 
                             break;
                         case 3: // display
@@ -261,6 +320,7 @@ int main(int argc, char **argv)
     //  {
     //  };
 
+    // ### PROGRAMME D'INTÉRACTION AVEC L'UTILISATEUR ###
     int commande;
     int key;
     char valeur[512];
@@ -288,8 +348,7 @@ int main(int argc, char **argv)
         switch (commande)
         {
         case 0: // EXIT
-            // sprintf(buf, "%d", commande);
-            // printf("buff :%s\n", buf);
+
             // envoyer l'ordre de exit 0 à tous les processus et faire un exit(0)
             for (int i = 0; i < N; i++)
             {
@@ -307,7 +366,7 @@ int main(int argc, char **argv)
         case 1: // STORE
 
             // Récupération de la clé de la valeur
-            printf("Entrer la clé :");
+            printf("Saisir la clé :");
             scanf("%d", &key);
             printf("\n");
             while (key < 0)
@@ -318,7 +377,7 @@ int main(int argc, char **argv)
             }
 
             // Récupération de la valeur
-            printf("Entrer la valeur : ");
+            printf("Saisir la valeur : ");
             scanf("%s", valeur);
             printf("\n");
 
@@ -334,7 +393,28 @@ int main(int argc, char **argv)
             // envoi de la valeur
             write(t[N - 1][1], valeur, lenValeur * sizeof(char));
 
+            break;
+
         case 2: // LOOKUP
+            // Récupération de la clé de la valeur
+            printf("Saisir la clé à rechercher:");
+            scanf("%d", &key);
+            printf("\n");
+            while (key < 0)
+            {
+                printf("clé erronée ! saisissez une autre :");
+                scanf("%d", &key);
+                printf("\n");
+            }
+
+            // envoie de la commande store au processus 0
+            write(t[N - 1][1], &commande, sizeof(int));
+
+            // envoie de la clé
+            write(t[N - 1][1], &key, sizeof(int));
+
+            // attendre la réponse du noeud effectif puis afficher le résultat########
+
             break;
         case 3: // DUMP
             break;
@@ -345,7 +425,6 @@ int main(int argc, char **argv)
         close(t[N - 1][1]);
     }
 
-    // display(listes[1]);
     close(pipeCtrl[1]);
     close(1);
     close(0);
