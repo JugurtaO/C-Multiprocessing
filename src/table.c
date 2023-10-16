@@ -30,7 +30,6 @@ void closeAllFileDiscreptors(int i, int N, int **t)
 {
 
     close(0);
-    // close(1);
     switch (i)
     {
     case 0: // effet de bord
@@ -71,33 +70,56 @@ void afficherMenu()
     printf("0. exit\n");
 }
 
-
 bool isKeyManagedByNode(int i, int N, int key)
 {
     return (key % N) == i;
 }
 
-
-bool isKeyExists(PTable_entry liste,int k){
-    Table_entry * current = liste;
-    bool exists=false;
-    while (current!= NULL && !exists)
-    {   
-        if(current->key==k)
-            exists=true;
+bool isKeyExists(PTable_entry liste, int k)
+{
+    Table_entry *current = liste;
+    bool exists = false;
+    while (current != NULL && !exists)
+    {
+        if (current->key == k)
+            exists = true;
         current = current->next;
     }
-   
-   return exists;
 
+    return exists;
 }
+
+// char *buildString(PTable_entry liste)
+// {
+
+//     char *affichage = malloc(sizeof(char)*10000);
+//     PTable_entry current = liste;
+
+//     char value[512];
+//     char key[512];
+//     char esp[]=" ";
+//     char bsn[]="\n";
+//     while (current != NULL)
+//     {
+//         sprintf(key,"%d", current->key);
+//         strcpy(value, current->val);
+//         strcat(key,esp);
+//         strcat(key,value);
+//         strcat(key,bsn);
+//         strcat(affichage,key);
+//         current = current->next;
+//     }
+
+//     return affichage;
+
+// }
 // Affiche le contenu de la table
 void display(PTable_entry table)
 {
     PTable_entry pe = table;
     while (pe != NULL)
     {
-        printf("<> %d : %s <> \n", pe->key, pe->val);
+        printf("    %d : %s\n", pe->key, pe->val);
         pe = pe->next;
     }
 }

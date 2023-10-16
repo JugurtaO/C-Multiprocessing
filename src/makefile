@@ -1,3 +1,6 @@
+#author: JUGURTA.O       *                                         
+#*************************
+
 #compiler name
 CC=gcc
 

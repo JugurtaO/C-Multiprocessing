@@ -62,7 +62,6 @@ int main(int argc, char **argv)
             printf("I'm the child process n°:%d; pid=%d\n", i, getpid());
             // fermeture de tous les descripteurs de fichiers non nécessaire au fonctionnement du processus i courant.
             close(pipeCtrl[0]);
-            close(pipeCtrl[1]);
             closeAllFileDiscreptors(i, N, t);
             int commande;
             int key;
@@ -109,7 +108,7 @@ int main(int argc, char **argv)
                                 write(t[0][1], &lenValeur, sizeof(int));
                                 write(t[0][1], valeur, lenValeur * sizeof(char));
                             }
-                            close(t[N - 1][0]);
+                            // close(t[N - 1][0]);
 
                             // close(t[i][1]);
                             lenValeur = 0;
@@ -123,7 +122,8 @@ int main(int argc, char **argv)
                             // si la clé key est gérée par le noeud i alors on lance la recherche
                             if (isKeyManagedByNode(i, N, key))
                             {
-                                strcpy(valeur, lookup(listes[i], key));
+                                char *val=lookup(listes[i], key);
+                                strcpy(valeur,val );
                                 if (valeur != NULL) // une valeur a été retrouvée
                                 {
                                     lenValeur = strlen(valeur);
@@ -148,9 +148,8 @@ int main(int argc, char **argv)
                                 write(t[i][1], &key, sizeof(int));
                             }
 
-                            close(t[N - 1][0]);
-                            
-                            lenValeur = 0;
+                            // close(t[N - 1][0]);
+
                             break;
                         case 3: // display
 
@@ -179,8 +178,6 @@ int main(int argc, char **argv)
                         {
                         case 0: // exit
 
-                            // code de exit
-                            // code de exit
                             close(t[i - 1][0]);
 
                             exit(0);
@@ -210,7 +207,7 @@ int main(int argc, char **argv)
                                 write(t[i][1], valeur, lenValeur * sizeof(char));
                             }
 
-                            lenValeur = 0;
+                            // lenValeur = 0;
                             break;
                         case 2: // lookup
 
@@ -227,7 +224,6 @@ int main(int argc, char **argv)
                                 else
                                 {
                                     strcpy(valeur, bb);
-                                    printf(">>>>>>>>>>>>>>>>>>%s\n",valeur);
                                     lenValeur = strlen(valeur);
                                 }
                                 if (lenValeur != 0) // une valeur a été retrouvée
@@ -253,7 +249,7 @@ int main(int argc, char **argv)
                                 write(t[i][1], &key, sizeof(int));
                             }
 
-                            lenValeur = 0;
+                            // lenValeur = 0;
                             break;
                         case 3: // display
 
@@ -280,7 +276,7 @@ int main(int argc, char **argv)
     sleep(1);
 
     // Ici on ferme les descripteurs dont le contrôleur n'a pas besoin
-    close(pipeCtrl[0]);
+     close(pipeCtrl[1]);
     for (int k = 0; k < N; k++)
     {
         close(t[k][0]);
@@ -299,7 +295,7 @@ int main(int argc, char **argv)
     {
         // affichage du Menu utilisateur
         afficherMenu();
-        printf("Option > : ");
+        printf("Option >> : ");
         scanf("%d", &commande);
         printf("\n");
         // vérification de la validité de la commande
@@ -323,14 +319,11 @@ int main(int argc, char **argv)
             }
 
             // attendre la mort de tous les processus fils
-            while (wait(NULL) != -1)
-            {
-                printf("mort\n");
-            };
+            while (wait(NULL) != -1)  { };
             continuer = false;
             break;
         case 1: // STORE
-            
+
             // Récupération de la clé de la valeur
             printf("Saisir la clé :");
             scanf("%d", &key);
@@ -362,9 +355,9 @@ int main(int argc, char **argv)
             break;
 
         case 2: // LOOKUP
-            
+
             // Récupération de la clé de la valeur
-            printf("Saisir la clé à rechercher:");
+            printf("Saisir la clé à rechercher :");
             scanf("%d", &key);
             printf("\n");
             while (key < 0)
@@ -380,8 +373,8 @@ int main(int argc, char **argv)
             // envoie de la clé
             write(t[N - 1][1], &key, sizeof(int));
 
-            // attendre la réponse du noeud effectif puis afficher le résultat ########
-            sleep(2);
+            // attendre la réponse du noeud effectif puis afficher le résultat 
+            sleep(1);
 
             // lecture de la longueur de la valeur recherchée
             read(pipeCtrl[0], &lenValeur, sizeof(int));
@@ -396,7 +389,7 @@ int main(int argc, char **argv)
                 printf("Aucune valeur n'a été trouvée ! \n");
             }
 
-            lenValeur=0;
+            lenValeur = 0;
 
             break;
         case 3: // DUMP
@@ -405,10 +398,11 @@ int main(int argc, char **argv)
             break;
         }
 
-        close(t[N - 1][1]);
+       
     }
 
-    close(pipeCtrl[1]);
+    close(t[N - 1][1]);
+    close(pipeCtrl[0]);
     close(1);
     close(0);
 
