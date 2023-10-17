@@ -427,8 +427,8 @@ int main(int argc, char **argv)
 
             // comment synchroniser les processus pour que les données ne se mélangent pas: Alors on met le processus père en mode read (attente d'un signal depuis le processus 0)
             // Tous les autres processus seront également en mode attente d'un signal depuis leur prédécesseur pour afficher
-            // Le processus 0 affiche en premier et écrit au second pour afficher à son tour, si le signal revient au processus zéro alors celui-ci informe
-            // le contrôleur de la fin de l'affichage de tous les processus et affichera à nouveau le menu d'options
+            // Le processus 0 affiche en premier et écrit au second pour afficher à son tour, si le signal revient au processus zéro (tous les processus ont affiché)
+            //alors celui-ci informe le contrôleur de la fin de l'affichage de tous les processus et affichera à nouveau le menu d'options
 
             // envoyer l'ordre d'affciher à tous les processus
             for (int i = 0; i < N; i++)
@@ -437,6 +437,8 @@ int main(int argc, char **argv)
                 close(t[i][1]);
             }
 
+
+            //attente du signal de fin d'affichage de la part du processus 0
             bool readMode = true;
             while (readMode)
             {
@@ -446,7 +448,7 @@ int main(int argc, char **argv)
                 }
             }
 
-            
+
             break;
         default:
             break;
