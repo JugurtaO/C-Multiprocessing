@@ -112,6 +112,7 @@ int main(int argc, char **argv)
 
                             // close(t[i][1]);
                             lenValeur = 0;
+
                             break;
 
                         case 2: // lookup
@@ -122,8 +123,8 @@ int main(int argc, char **argv)
                             // si la clé key est gérée par le noeud i alors on lance la recherche
                             if (isKeyManagedByNode(i, N, key))
                             {
-                                char *val=lookup(listes[i], key);
-                                strcpy(valeur,val );
+                                char *val = lookup(listes[i], key);
+                                strcpy(valeur, val);
                                 if (valeur != NULL) // une valeur a été retrouvée
                                 {
                                     lenValeur = strlen(valeur);
@@ -152,8 +153,23 @@ int main(int argc, char **argv)
 
                             break;
                         case 3: // display
+                            printf("Process %d : \n", getpid());
+                            display(listes[i]);
+                            key = 1;
+                            write(t[i][1], &key, sizeof(int));
 
-                            // code de display
+                            // READ MODE ACTIVATED
+                            bool readMode = true;
+                            while (readMode)
+                            {
+                                if (read(t[N - 1][0], &key, sizeof(int)) > 0)
+                                {
+                                    readMode = false;
+                                }
+                            }
+
+                            // informer le contrôleur de la fin de l'affichage
+                            write(pipeCtrl[1], &key, sizeof(int));
 
                             break;
 
@@ -250,10 +266,23 @@ int main(int argc, char **argv)
                             }
 
                             // lenValeur = 0;
+
                             break;
                         case 3: // display
 
-                            // code de display
+                            // READ MODE ACTIVATED
+                            bool readMode = true;
+                            while (readMode)
+                            {
+                                if (read(t[i - 1][0], &key, sizeof(int)) > 0)
+                                {
+                                    readMode = false;
+                                }
+                            }
+                            printf("Process %d : \n", getpid());
+                            display(listes[i]);
+                            key = 1;
+                            write(t[i][1], &key, sizeof(int));
 
                             break;
 
@@ -276,7 +305,7 @@ int main(int argc, char **argv)
     sleep(1);
 
     // Ici on ferme les descripteurs dont le contrôleur n'a pas besoin
-     close(pipeCtrl[1]);
+    close(pipeCtrl[1]);
     for (int k = 0; k < N; k++)
     {
         close(t[k][0]);
@@ -319,7 +348,9 @@ int main(int argc, char **argv)
             }
 
             // attendre la mort de tous les processus fils
-            while (wait(NULL) != -1)  { };
+            while (wait(NULL) != -1)
+            {
+            };
             continuer = false;
             break;
         case 1: // STORE
@@ -373,7 +404,7 @@ int main(int argc, char **argv)
             // envoie de la clé
             write(t[N - 1][1], &key, sizeof(int));
 
-            // attendre la réponse du noeud effectif puis afficher le résultat 
+            // attendre la réponse du noeud effectif puis afficher le résultat
             sleep(1);
 
             // lecture de la longueur de la valeur recherchée
@@ -393,12 +424,33 @@ int main(int argc, char **argv)
 
             break;
         case 3: // DUMP
+
+            // comment synchroniser les processus pour que les données ne se mélangent pas: Alors on met le processus père en mode read (attente d'un signal depuis le processus 0)
+            // Tous les autres processus seront également en mode attente d'un signal depuis leur prédécesseur pour afficher
+            // Le processus 0 affiche en premier et écrit au second pour afficher à son tour, si le signal revient au processus zéro alors celui-ci informe
+            // le contrôleur de la fin de l'affichage de tous les processus et affichera à nouveau le menu d'options
+
+            // envoyer l'ordre d'affciher à tous les processus
+            for (int i = 0; i < N; i++)
+            {
+                write(t[i][1], &commande, sizeof(int));
+                close(t[i][1]);
+            }
+
+            bool readMode = true;
+            while (readMode)
+            {
+                if (read(pipeCtrl[0], &key, sizeof(int)) > 0)
+                {
+                    readMode = false;
+                }
+            }
+
+            
             break;
         default:
             break;
         }
-
-       
     }
 
     close(t[N - 1][1]);
