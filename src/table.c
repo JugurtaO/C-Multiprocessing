@@ -89,28 +89,7 @@ bool isKeyExists(PTable_entry liste, int k)
     return exists;
 }
 
-// char *buildString(PTable_entry liste)
-// {
 
-//     char *affichage = malloc(sizeof(char)*10000);
-//     PTable_entry current = liste;
-
-//     char value[512];
-//     char key[512];
-//     char esp[]=" ";
-//     char bsn[]="\n";
-//     while (current != NULL)
-//     {
-//         sprintf(key,"%d", current->key);
-//         strcpy(value, current->val);
-//         strcat(key,esp);
-//         strcat(key,value);
-//         strcat(key,bsn);
-//         strcat(affichage,key);
-//         current = current->next;
-//     }
-
-//     return affichage;
 
 // }
 // Affiche le contenu de la table
