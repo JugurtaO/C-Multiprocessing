@@ -46,7 +46,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    printf("I'm the controller\n");
+    // printf("I'm the controller\n");
 
     // création des N processus et traîtement de la commande correspondante
     for (int i = 0; i < N; i++)
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
             exit(1);
 
         case 0:
-            printf("I'm the child process n°:%d; pid=%d\n", i, getpid());
+            // printf("I'm the child process n°:%d; pid=%d\n", i, getpid());
             // fermeture de tous les descripteurs de fichiers non nécessaire au fonctionnement du processus i courant.
             close(pipeCtrl[0]);
             closeAllFileDiscreptors(i, N, t);
@@ -108,10 +108,14 @@ int main(int argc, char **argv)
                                 write(t[0][1], &lenValeur, sizeof(int));
                                 write(t[0][1], valeur, lenValeur * sizeof(char));
                             }
-                            // close(t[N - 1][0]);
+                            valeur[lenValeur] = '\0';
 
-                            // close(t[i][1]);
                             lenValeur = 0;
+
+                            for (int i = 0; i < strlen(valeur); i++)
+                            {
+                                valeur[i] = '\0';
+                            }
 
                             break;
 
@@ -125,10 +129,11 @@ int main(int argc, char **argv)
                             {
                                 char *val = lookup(listes[i], key);
                                 strcpy(valeur, val);
+
                                 if (valeur != NULL) // une valeur a été retrouvée
                                 {
                                     lenValeur = strlen(valeur);
-
+                                    valeur[lenValeur] = '\0';
                                     // envoi de la longeur de la valeur trouvée
                                     write(pipeCtrl[1], &lenValeur, sizeof(int));
                                     // envoi de la valeur trouvée
@@ -223,7 +228,11 @@ int main(int argc, char **argv)
                                 write(t[i][1], valeur, lenValeur * sizeof(char));
                             }
 
-                            // lenValeur = 0;
+                            // Réinitialiser la varibale valeur
+                            for (int i = 0; i <= strlen(valeur); i++)
+                            {
+                                valeur[i] = '\0';
+                            }
                             break;
                         case 2: // lookup
 
@@ -264,9 +273,11 @@ int main(int argc, char **argv)
                                 write(t[i][1], &commande, sizeof(int));
                                 write(t[i][1], &key, sizeof(int));
                             }
-
-                            // lenValeur = 0;
-
+                            // Réinitialiser la varibale valeur
+                            for (int i = 0; i <= strlen(valeur); i++)
+                            {
+                                valeur[i] = '\0';
+                            }
                             break;
                         case 3: // display
 
@@ -369,6 +380,7 @@ int main(int argc, char **argv)
             // Récupération de la valeur
             printf("Saisir la valeur : ");
             scanf("%s", valeur);
+            valeur[strlen(valeur)] = '\0';
             printf("\n");
 
             lenValeur = strlen(valeur);
@@ -382,6 +394,13 @@ int main(int argc, char **argv)
             write(t[N - 1][1], &lenValeur, sizeof(int));
             // envoi de la valeur
             write(t[N - 1][1], valeur, lenValeur * sizeof(char));
+
+            // Réinitialiser la varibale valeur
+            lenValeur = 0;
+            for (int i = 0; i <= strlen(valeur); i++)
+            {
+                valeur[i] = '\0';
+            }
 
             break;
 
@@ -413,6 +432,7 @@ int main(int argc, char **argv)
             if (lenValeur != 0)
             {
                 read(pipeCtrl[0], valeur, lenValeur * sizeof(char));
+                valeur[lenValeur] = '\0';
                 printf("Valeur trouvée : %s\n", valeur);
             }
             else
@@ -420,7 +440,12 @@ int main(int argc, char **argv)
                 printf("Aucune valeur n'a été trouvée ! \n");
             }
 
+            // Réinitialiser la varibale valeur
             lenValeur = 0;
+            for (int i = 0; i <= strlen(valeur); i++)
+            {
+                valeur[i] = '\0';
+            }
 
             break;
         case 3: // DUMP
@@ -428,7 +453,7 @@ int main(int argc, char **argv)
             // comment synchroniser les processus pour que les données ne se mélangent pas: Alors on met le processus père en mode read (attente d'un signal depuis le processus 0)
             // Tous les autres processus seront également en mode attente d'un signal depuis leur prédécesseur pour afficher
             // Le processus 0 affiche en premier et écrit au second pour afficher à son tour, si le signal revient au processus zéro (tous les processus ont affiché)
-            //alors celui-ci informe le contrôleur de la fin de l'affichage de tous les processus et affichera à nouveau le menu d'options
+            // alors celui-ci informe le contrôleur de la fin de l'affichage de tous les processus et affichera à nouveau le menu d'options
 
             // envoyer l'ordre d'affciher à tous les processus
             for (int i = 0; i < N; i++)
@@ -437,8 +462,7 @@ int main(int argc, char **argv)
                 close(t[i][1]);
             }
 
-
-            //attente du signal de fin d'affichage de la part du processus 0
+            // attente du signal de fin d'affichage de la part du processus 0
             bool readMode = true;
             while (readMode)
             {
@@ -447,7 +471,6 @@ int main(int argc, char **argv)
                     readMode = false;
                 }
             }
-
 
             break;
         default:

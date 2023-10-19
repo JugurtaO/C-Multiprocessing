@@ -3,7 +3,13 @@
 
 # Author
 - [OURZIK jugurta.](https://github.com/JugurtaO)
-- [MIEL Nils.]
+
+# Contributors:
+- [OURZIK jugurta.](https://github.com/JugurtaO)
+- [MIEL NILS]
+
+**Formation: Licence 3 MIAGE**
+
 
 # ⏩ Description du projet:
 Le but de ce projet est de programmer une application qui permet de stocker et de consulter un dictionnaire de données. Les données seront de type chaîne de caractères.
@@ -22,5 +28,5 @@ Sur la ligne de commande depuis un terminal, lancez:
    ./main N       #executer le programme: N>=2  est le nombre de processus.
 ``` 
 
-⏩ Vous trouverez en annexe, le rapport complet du projet.Merci
+⏩ Vous trouverez en annexe, le rapport complet du projet. Merci!
    
