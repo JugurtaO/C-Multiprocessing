@@ -1,4 +1,4 @@
-## Application qui permet de stocker et de consulter un dictionnaire de données Rapport de projet
+## Application qui permet de stocker et de consulter un dictionnaire de données.
 
 
 # Author
