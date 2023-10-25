@@ -4,9 +4,6 @@
 # Author
 - [OURZIK jugurta.](https://github.com/JugurtaO)
 
-# Contributors:
-- [OURZIK jugurta.](https://github.com/JugurtaO)
-- [MIEL NILS]
 
 **Formation: Licence 3 MIAGE**
 
